@@ -2,6 +2,16 @@
 
 ---
 
+University of Pisa, Computer Science MSc, AY 20/21.
+
+Lecturer: **Professor Fabrizio Baiardi**.
+
+Notes taken by Tommaso Colella.
+
+\newpage
+
+---
+
 ### Lecture 1
 
 Systems will be attacked. If you believe otherwise you're simply wrong. Many attacks are only discovered after years.

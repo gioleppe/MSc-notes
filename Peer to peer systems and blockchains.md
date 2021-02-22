@@ -2,6 +2,16 @@
 
 ---
 
+University of Pisa, Computer Science MSc, AY 20/21.
+
+Lecturer: **Professor Laura Ricci**.
+
+Notes taken by Tommaso Colella.
+
+\newpage
+
+---
+
 ### Lecture 1
 
 Peer to peer started as a file sharing mean. Peers have a great "churn" problem, because of their on/off behaviour. A server is needed in order to bootstrap the P2P network. Peers are both providers and consumers. A peer to peer system is made of autonomous entities, it can auto-organise, and works in a complete or partial decentralized way. Another definition of P2P network focuses on its goal of sharing node resources, and being able to adapt to continuous churn.

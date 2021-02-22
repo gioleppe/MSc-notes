@@ -2,9 +2,17 @@
 
 ---
 
+University of Pisa, Computer Science MSc, AY 20/21.
+
+Lecturer: **Professor Stefano Chessa**.
+
+Notes taken by Tommaso Colella.
+
+\newpage
+
 ### Lecture 1
 
-This lesson was largely a course introduction, I couldn't be bothered to actually take notes on this.
+This lesson was largely a course introduction, check out the recording.
 
 ----
 
@@ -106,7 +114,7 @@ Constraints in devices make it very difficult to actually secure them, some pape
 
 This is a great problem, especially wrt sensors, since an attacker can insert false data into the network. 
 
-#### Cybercrime with IoT 
+#### Cybercrime with IoT
 
 It also happens at small scale, with ransomwares and small targeted attacks. Kits for similar attacks are available on the internet (black markets) for very cheap amounts of money, so everyone could in fact buy and use them.
 
