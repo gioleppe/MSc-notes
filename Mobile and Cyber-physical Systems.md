@@ -44,7 +44,7 @@ NoSQL databases are widely used in the IoT world because of their great horizont
   - Data formats, standardisation
 - interoperability
 
-One of the main problems wrt performance is latency: roundtrip times could have an impact on critical applications such as alarms and security cameras. This problem can be solved by bringing the business logic into the IoT device itself, for example the camera, this way you can take some decisions without having to communicate with the cloud, and the latency problem gets solved. Of course you need more computing power on the device in order to do so. Also, vendors could want the user to use their business model in the cloud,so this poses a threat on this kind of solutions, since vendors would have no service to sell this way. Vendors use data to their own advantage in order to improve their devices and lock in consumers to their own brand.
+One of the main problems wrt performance is latency: roundtrip times could have an impact on critical applications such as alarms and security cameras. This problem can be solved by bringing the business logic into the IoT device itself, for example the camera, this way you can take some decisions without having to communicate with the cloud, and the latency problem gets solved. Bringing the logic to the end device also helps with relability, since there are less points of failure this way (communication may fail between nodes in a network).  Of course you need more computing power on the device in order to employ similar solutions. Vendors could also want the user to use their business model in the cloud, so this poses a threat on this kind of solutions, since vendors would have no service to sell this way. Vendors use data to their own advantage in order to improve their devices and lock in consumers to their own brand.
 
 IoT & Artificial intelligence are cooperating. 
 
@@ -76,7 +76,7 @@ The solution to the vertical silo/vendor lock-in problem is to introduce standar
 
 #### Wireless technologies & standards
 
-Theres a sort of dichotomy between communications range and exchanged data rates. Important standards for IoT are **LORA** (which was built to address smart city applications), **Zigbee** (which can build very large networks), **Bluetooth** (has a lot of different versions such as BLE ad BT5, and works in a lot of different context and applications, but cannot work with very large networks), **IEEE 802.11 standards (WiFi)** it's a family of standards, and has had a lot of iterations which improved each time.
+Theres a sort of dichotomy between communications range and exchanged data rates. Important standards for IoT are **LORA** (which was built to address smart city applications), **Zigbee** (which can build very large networks and also supports point-to-point communications), **Bluetooth** (has a lot of different versions such as BLE ad BT5, and works in a lot of different context and applications, but cannot work with very large networks), **IEEE 802.11 standards (WiFi)** it's a family of standards, and has had a lot of iterations which improved each time.
 
 **IEEE 802.15.4 standard** is a standard defining both physical and MAC layers. It is used as a foundation for **Zigbee**, which builds on top of it defining higher network layers and applications interface. Zigbee is an industrial consortium whereas the 802.15.4 standard is promoted by the IEEE. Zigbee supports multi-hop deployments.
 
@@ -90,7 +90,7 @@ Theres a sort of dichotomy between communications range and exchanged data rates
 
 The main motivation is a reduction of the costs for developing a technology. Standardisation happens when a tecnology becomes mature since the big revenues move somewhere else and there's no interest in investing in the development of the technology anymore. Without these tenets standardisation fails.
 
-This produces a "coopetition" between vendors (cooperation/competition).
+This produces a "coopetition" between vendors (cooperation/competition): they all help in developing the technology and updating the standard, competing on some other aspect of the business model.
 
 When none of the proposed standards has become the "de facto" standard, the main problem becomes that of interoperability, since we've got a lot of different standards all deployed at the same time. Interoperability becomes a problem for standards as well, the same as with vertical silos.
 
