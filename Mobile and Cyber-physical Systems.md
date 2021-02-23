@@ -121,3 +121,156 @@ It also happens at small scale, with ransomwares and small targeted attacks. Kit
 IoT devices have security and privacy requirements. Most of the requirements are implemented into the gateway which is the most powerful device and has a central position, being able to secure all the IoT network. This is why **security requirements focus on the gateway**. 
 
 Requirements may be difficult to achieve because of the aforementioned constraints of the devices. Also, requirements make several references to privacy, this is due to the fact that some of the IoT devices can be used to extract a lot of useful informations on their users/wearers.
+
+---
+
+### Lecture 4 - IoT protocol stacks
+
+We will see two protocols, MQTT and Zigbee.
+
+#### MQTT
+
+It is based on the publish-subscribe model, it is used to apply the publish/subscribe model to IoT applications, and it has also extra features.
+
+Since things must be connected to the internet in order to become "IoT devices", they must implement an internet protocol suite: such as IP at network layer, TCP/UDP at transport layer, and some protocol at application layer.
+
+The standard stack using HTTP is too demanding for IoT devices and their limited capabilities, we also have some specific requirements that are not covered by the standard internet suite that must be addressed when deploying IoT devices. That's why we need a different protocol.
+
+**MQTT** stands foo "message queueing telemetry transport", it is a very lightweight publish/susbscribe reliable messaging transport protocol. It has a very small code footprint, uses a low amount of bandwidth and has minimal packet overhead (this guarantees better performance when compared to HTTP).
+
+MQTT is an OASIS standard, it's been around since the 90s, and build on top of TCP/IP, using **port 1883** (**8883 when using MQTT over SSL**, but SSL adds a significant overhead!)
+
+- Uses a Client-Server architecture
+- Implements a publish/subscribe paradigm
+- It is simple on the client-side (and complex on the server-side), this is very important since IoT devices will operate as clients.
+- It provides Quality of Service (QoS) data delivery
+- It is data agnostic
+- It is suitable for Mobile To Mobile (M2M) and IoT applications.
+
+#### Recap on publish/subscribe paradigm
+
+The main actors are publishers and subscribers, which are both clients, and they do not know each other. This is implemented by an event service (AKA broker), which is a server that knows both the publishers and the subscribers.
+
+Publishers produce events (or any data that might be shared by means of events). They interact only with the broker.
+
+Subscribers express the interest for an event, or a pattern of events, in order to get notified when such event occurs. They interact only with the broker as well.
+
+Publishers and subscribers are fully decoupled in time, space, and synchronization.
+
+The broker knows publishers and subscribers, receive messages from the publishers, filters and distributes them to the subscribers, and also manages the requests of subscription/unsubscription.
+
+A publish/subscrive interaction can be implemented in many different ways, in the case of MQTT the broker is an independent server.
+
+**Space decoupling**: publisher and subscriber do not need to know each other and do not share anything, they don't need to know each other's IP address and port, for example.
+
+**Time decoupling**: publisher and subscriber do not need to run at the same time
+
+**Synchronization decoupling**: operations on both publisher and subscriber are not halted during publish or receiving (no need to implement flow control).
+
+**Scalability**: it is better than the usual client/server approach, but with this paradigm scalability is entirely up to the broker. the good thing is that the broker can be easily parallelized and it is event driven. In order to slae to a very large number of devices, some degree of broker parallelization may be needed.
+
+The messages can be filtered by the broker according to various criteria:
+
+1. **Based on a subject topic** (which is part of the message, clients subscribe for a specific topic and typically topics are just strings)
+2. Based on the content (clients subscribe for a specific query, for example temp>30°, the broker filters the messages based on a specific query, this way data cannot be encrypted though!)
+3. Based on type (events get filtered on both their content and their structure, the type refers to the type/class of the data. This requires tight integration of the middleware and the language, usually an O.O. one)
+
+**MQTT only uses the first approach**.
+
+In order to use the first approach, pub/sub need to agree on the topics beforehand. Also, publishers cannot assume that somebody is listening to the messages (messages may not be read by any subscribers).
+
+Pubs/subs need to know the hostname/ip and port of the broker in order to connect to it.
+
+In most applications the delivery of the messages is mostly in near-real-time, however the broker may also store messages for subscribers that are off-line, but the off-line subscribers need to have been connected with a persistent sessione and they should have already subscribed to the topic.
+
+MQTT decouples the synchronisation:
+
+- most client libraries work asynchronously (they are based on callbacks)
+- synchronization is still possible if needed, by means of synchronous APIs
+
+MQTT is easy to use on the client-side, since the complexity is on the broker-side. This is the main reason why it is well suited for low power devices. As already stated it is based on Subject-based filtering, there's a hierarchy of topics and needs a careful design that leaves space for future extensions.
+
+There are three QoS levels for the messages: 0, 1, 2.
+
+A client connects to a broker by sending a **CONNECT message**, that includes:
+
+- A Client ID (unique string that identifies the client, it can also be empty, in the latter case the broker assigns a clientID, and does not keep a status for the client)
+- an optional Client Session (False if the client requests a persistent session. The broker will store all subscriptions and missed messages for the client, as long as the messages are at QoS level 1 or 2. If there was a previous session it is resumed, and after the disconnection the broker and the client will store the state of the session. True otherwise, andin this case the broker cleans all the information of the client regarding previous sessions)
+- an optional Username/Password (no encrypyion, unless security is used at transport layer)
+- optional Will flags (if present, the broker will notify other clients in case of an ungraceful disconnection)
+- optional KeepAlive (The client commits itself to sending a control packet to the broker with a keep alive interval, expressed in second in a 16-bits word. It allows the broker to detect whether the client is still active. KeepAlive = 0 turns off this mechanism)
+
+The CONNECT message gets acknowledged by the broker via a CONNECTACK message, which confirms whether or not the connection was successful. The CONNECTACK also informs the client if there was a persistent session with that specific client, in the client asked for a persistent session.
+
+After connecting, a client can publish messages. Each message contains a topic and a payload.
+
+How is a **PUBLISH message** formed?
+
+- packetId, with an integer, which is 0 if the QoS level is 0 (with QoS 0 you do not need to specify a packetId)
+- topicName, which is a string possibily structured in a hierarchy such as "home/bedroom/temperature", delimited with "/"
+- qos, either 1, 2, or 3
+- payload (the actual message in any form
+- retainFlag, which tells the broker if the message has to be stored as the last known value for the topic (this way a subscriber that connects later will get this message)
+- dupFlag, which indicates that the message is a duplicate of a previous, unacked message, which is clearly meaningful when QoS is either 1 or 2.
+
+When a broker receives a message, it immediately acknolewdge it, then it processes it (in order to identify its subscribers), then it delivers the message to its subscribers.
+
+The publisher leaves the message to the broker, and doesn't know whether there are any subscribers and whether or when they will receive the message.
+
+A **SUBSCRIBE message** contains:
+
+- packetId
+- topic1, which is a string that must match with publish messages
+- qos1, which can either be 0, 1, or 2
+
+topic and qos are repeated in a list for all topics to subscribe (so we would have <topic2, qos2>, <topic3, qos3>, and so on)
+
+The broker acknowledges the Subscribe with a SUBACK message, which contains a packetId (the packedId of the ack'd message) and a number returnCode[s], one for every subscribed topic (with 128 indicating failure and 0, 1, or 2 indicating success with the corresponding maximum QoS granted, which can be lesser than the requested QoS.)
+
+A client can unsubscribe a topic using an **UNSUBSCRIBE message**, which contains a packetId and the list of topics to unsubscribe from. Unsurprisingly, the message is ack'd with an UNSUBACK message, containing a packetId field, which is the same as that of the UNSUBSCRIBE message.
+
+Some **wildcards** can be used with the hierarchies in the subscribe messages, for example:
+
+- home/firstfloor/**+**/presence selects all presence sensors in all rooms in the first floor
+- home/firstfloor/**#** selects all sensors in the first floor
+
+With some versions of MQTT, you can also subscribe to topics reserved for internal statistics of MQTT, beginning with a "$" character. They are published by the broker itself and cannot be published by clients. Some examples are:
+
+- $SYS/broker/clients/connected
+- $SYS/broker/messages/sent
+- $SYS/broker/uptime 
+
+and so on.
+
+There are no specific rules for the topics, so the hierarchy must be devised by the programmer, there are some best practices though:
+
+- do not initiate a topic with a "/"
+- do not use spaces
+- keep topics short enough, as these are actually sent in the messages and add overhead to the communications
+- use only UTF-8 ASCII characters
+- sometimes it is useful to embed the clientID (or an unique identifier) in the topic, such as "sensor1/temperature". Of course only the client with the same clientId would be able to publish such a topic, but this is left to the programmer's design.
+- use hierarchies of topics that are easily extendible
+- prefer specific topics to generic topics, for example home/livingroom/temperature
+- do not subscribe to all messages using #, since this could produce a very high workload, not easily supported by a client (and by the network itself). Accessing all messages could still be useful in order to store them in a DB, though.
+
+#### QoS in MQTT
+
+It is an agreement between the sender and the receiver of a message, in MQTT it is between the clients and the broker. There are three level of QoS as already stated: 0, 1, 2. QoS is used both between the publisher and the broker and between the broker and the subscriber.
+
+**Qos level 0** sends a message only once, it is a "best effort" delivery. Messages are not ack'd by the receiver and when used betweeen publisher and broker, are not stored by the broker (only immediate forward policy is supported). it provides the same guarantee as the TCP protocol, that is, the delivery is guaranteed as long as the connection remains. If one of the two peers disconnects there's no guarantee anymore.
+
+**QoS level 1** means the message is sent at leat once, messages are numbered ans stored by the broker until they are delivered to all subscribers with QoS level 1. Each message is delivered at least once to the subscribers with QoS 1, but a message may be delivered more than once. Subscribers send acknowledgements in the form of PUBACK packets.
+
+**QoS level 2** means exactly once.It is the highest QoS level in MQTT, it is the slowest as well, it guarantees that each message is received exactly once by the recipient, using a double two way handshake. Requires using PUBREC and PUBREL packets.
+
+QoS levels can different between publisher and broker and between broker and subscriber. Messages sent with QoS 1 or 2 are always stored for off-line clients.
+
+The following are the best practices regarding QoS:
+
+- use QoS level 0 when
+  -  the connection is stable and reliable,
+  -  a single message is not that important or it gets stale with time
+  - messages are updated frequently and the old ones become stale
+  - there's no need of a queue for offline receivers
+- use QoS level 1 when you need all messages and subscribers can handle duplicates
+- use QoS level 2 when you need all emssages and subscribers cannot handle duplicates. Level 2 has twice the overhead wrt level 1 (which has twice the overhead wrt level 0)
