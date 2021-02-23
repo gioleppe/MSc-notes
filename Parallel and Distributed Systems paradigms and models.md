@@ -4,7 +4,7 @@
 
 University of Pisa, Computer Science MSc, AY 20/21.
 
-Lecturer: **Professor Marco Danelutto.
+Lecturer: **Professor Marco Danelutto**.
 
 Notes taken by Tommaso Colella.
 
@@ -12,7 +12,7 @@ Notes taken by Tommaso Colella.
 
 ---
 
-### Lecture 1
+### Lecture 1 - Setting up the Scenario: Evolution from single to multi core and GPU accelerators
 
 (Course introduction)
 
@@ -20,7 +20,7 @@ GPUs as accelerators --
 
 ---
 
-### Lecture 2
+### Lecture 2 - Scenario: FPGA as accelerators, TOP500 and GREEN500
 
 #### Recap
 
@@ -78,3 +78,86 @@ Of course, to exploit all this degree of parallelism we need to write parallel p
 **Green500**: The list of the most power efficient supercomputers. 
 
 **OpenMP**: standard used to parallelize a small amount of (simple) patterns with the Data Parallel approach.
+
+---
+
+### Lecture 3 - Sample Parallel Computations
+
+**Sequential**: 
+
+- $A \to B \to C$
+
+- $| - | - | - |$ (time = $T_A + T_B + T_C$)
+
+**Parallel**: 
+
+- $A$
+- $B$
+- $|-|$ (time = $max(T_A, T_B,...)$)
+
+We're interested into moving from sequential computations to parallel ones, and to achieve some kind of speedup in doing this. Of course we need some workers to compute the single tasks.
+
+**Speedup** = $\frac{T_{seq}}{T_{par}} = \frac{T_A + T_B + T_C}{max(T_A, T_B, T_C)}$
+
+in our case  $speedup = \frac{3T_A}{T_A} = 3$, assuming the three operations take the same amount of time (more or less) and assuming to employ three workers.
+
+#### Some Examples 
+
+- **Translate a book** (eng $\to$ ita)
+  - We have m pages
+  - $T_P$ time to translate 1 page
+
+A single person (sequential worker), may spend a total time $T_{seq} = m*T_P$  translating the book by herself.
+
+ Let's now assume to make the same job together:
+
+- $760$ pages
+- $76$ students = n
+- $\frac{760pp}{76}$ 
+
+What I can hope is that $T_{par}(76)\simeq \frac{m}{n} * tp$, that is $speedup(n) \simeq \frac{m*T_p}{m/n*T_P} \simeq n$
+
+At the beginning, I have to pay a splitting time, which is proportional to the number of workers/students taking up the job. We also have to count for the merginng time at the end, which is needed in order to collect the job done so the formula becomes:
+
+ $T_{par} = T_{split} \times n + \frac{m}{n}T_p + T_{merge} \times n$
+
+$T_{split}$ and $T_{merge}$ are only needed because we want to make the computation parallel, we don't have such overhead if we're using a simple sequential computation.
+
+So speedup becomes: 
+
+$Speedup(n) = \frac{m*T_p}{n(T_{split} + T_{merge}) + \frac{m}{n}T_p}$
+
+If we work in a regime where $m \gg n$, the time in splitting and merging can be omitted, and the formula comes close to the linear speedup that we saw earlier, but if we take $T_{split}$ and $T_{merge}$ into account, we will **always** achieve a worse result than the ideal speedup of n. 
+
+We could never achieve a speedup that is superlinear, if $\frac{T_{seq}}{T_{par}} > n$ we would find out that the sequential time would be smaller than the parallel one, but it is clearly a contradiction, so, normally, this is impossible.
+
+If I increase too much the number of students/workers, the time in splitting the job would increase. The overhead becomes more and more important, and at a certain point the speedup function will actually begin to decrease.
+
+Going back to the book translation example, we could have different kind of pages:
+
+- pages with a small amount of pictures, where $T_p = \frac12h$
+- pages with a great amount of pictures, where $T_p = \frac14h$
+
+If the pages which take longer to translate are clustered, some student could get a lot of those, and take much more time than another student that only gets pages with great amount of pictures. There's some kind on inefficiency taking place, which could be solved if workers who already finished translating their pages were able to ask more work proactively to the workers struggling to finish the job. Another approach would be to give out pages in smaller batches, this would make each task smaller and easier/faster to complete, but would also increase the overhead involved with assigining the tasks. As with everything, there's a tradeoff to consider.
+
+**Embarassingly parallel computation**: once a worker gets a task, the task can go on without being synchronized with the other workers at all. 
+
+**Data parallel computation**: there's a task which I can split in parts, once I have the set of parts, each item in the set can be processed in order to get a set of partial results which I can then combine to form the global result.
+
+Task $\to$ Parts set $\to$ Results set $\to$ Global result
+
+There are data parallel computations that are not embarassingly parallel. For example summing the rows in a matrix.
+
+Key point: counting, counting means computing sums, and "+" is an associative and commutative operator
+
+Another possibility is to split a computation in various steps (let's say 3) to be carried out by a number of workers each specializing in the single step (let's say 3, again). This forms a kind of pipeline that lets us output one element for time unit, when fully operational. In this case $T_{par} = m*max(T_i) + \sum{T_i} - max(T_i) = (m-1)max(T_f, T_g, T_h) + (T_f + T_g + T_h)$
+
+This case that we just mentioned is called **Stream Parallel Computation**
+
+Translating a book $\to$ **MAP parallel computation** 
+
+Counting devices $\to$ **REDUCE parallel computation**
+
+assembling bags $\to$ **PIPELINE parallel computation**
+
+There are the three main kinds of parallelism that we will consider.
