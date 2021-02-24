@@ -160,4 +160,76 @@ Counting devices $\to$ **REDUCE parallel computation**
 
 assembling bags $\to$ **PIPELINE parallel computation**
 
-There are the three main kinds of parallelism that we will consider.
+These are the three main kinds of parallelism that we will consider.
+
+---
+
+### Lecture 4 - 
+
+Let's consider a bank. You have a number of employees, and people line up in order to get services from them. Let's say we have **e employees** and let $T_e$ be the average time needed by an employee to serve a single client. Let's also assume to have $Ta$, the time taken for a new client coming to the bank.
+
+Inter arrival rate = $\frac{1}{T_a}$
+
+Service rate = $\frac{1}{T_e} \times e$
+
+If the inter arrival rate is small, and $T_e$ is big, the queue starts to grow. I can imagine to increase the number of the employees, of course. We should strive to reach a point where $T_a \simeq \frac{T_e}{e}$.
+
+Let's suppose $T_e = avg(T_{e1}, T_{e2}, T_{e3},..., T_{ek})$, this means that we have employees working at diferent speeds.
+
+**Farm Pattern**: it is a stream parallel pattern
+
+**Fair scheduling**: $T_{schedule} + T_{ei}$, of course $T_{schedule}$ is an overhead
+
+1. Map
+2. Reduction
+3. Pipeline
+4. Farm
+
+Map and Reduction are Data Parallel patterns, while Pipeline and Farm are Stream Parallel patterns.
+
+#### Measures of interest
+
+#### **Latency (L)**
+
+- Time from the start of a task to the computation of the the final result
+- $L = T_{stop} - T_{start}$ 
+
+**Service Time**
+
+- Time in between the delivery of two consecutive results
+- makes sense only for stream parallel computations
+- it is equivalent to the time in between accepting two consecutive input tasks to compute
+- For sequential computations, $T_S = L$
+- In some sense, it is the same for data parallel computations, $T_S = L$, this makes sense only for Data Parallel computations on a stream of input tasks.
+
+**Throughput** 
+
+- amount of tasks computed per unit of time
+- $\frac{1}{T_S}$
+
+Base (non derived) measures include: 
+
+- Latency
+- One among Service Time and Throughput
+
+**Derived measures** are functions of the base measures and of the parallelism degree.
+
+- $speedup(n) = \frac{best\ sequential\ time}{parallel\ time\ with\ n} = \frac{T_{seq}}{T_{par}}$ (measures how much I improve wrt the sequential state of the art)
+- $scalability(n) = \frac{T_{par}(1)}{T_{par}(n)}$ (how much I can improve when using higher parallelism degrees)
+
+**Speedup and Scalability** can be given both in terms of Latency (main interest wrt DP computations) or Service Time (main interest wrt ).
+
+**Efficiency**: it is a measure of the capacity to work with the available resources. It tells me "how much far" I am from the ideal parallel computation.
+
+$ideal\ parallel\ time(n) = T_{id} = \frac{T_{seq}}{n}$
+
+$Efficiency = \epsilon(n) = \frac{T_{id}}{T_{par}(n)} = \frac{T_{seq}}{n \times T_{par}(n)} = \frac{speedup(n)}{n}$
+
+The maximum possible efficiency is 1. Values of efficiency > 90% are considered good. Ideal efficiency is quite impossible to achieve, since there's always some overhead involved with parallel computation.
+
+$\epsilon(n) = \frac{T_{id}}{\frac{t_{seq}}{n} + overhead} = \frac{T_{id}}{T_{id} + overhead}$
+
+$\epsilon(1) = \frac{T_{seq/1}}{T_{par}(1)} = \frac{T_{seq}}{T_{seq}} = 1$
+
+Of course, $T_{par}(1)$ is not really equal to $T_{seq}$ (it features some overhead introduced by the parallel computation), but we can simplify it considering the time for $T_{seq}$ in cases such as the previous equation.
+
