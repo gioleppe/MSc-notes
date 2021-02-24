@@ -57,5 +57,87 @@ The main strength with semi decentralized systems is resource sharing, while its
 
 What is a **Peer to Peer overlay**? a logic network defined at application level connecting peers laid over the IP infrastructure. It's built on top of an existing network and provides services not available in the underlying network. Most P2P overlays are build over TCP/IP.
 
+---
 
+### Lecture 3
+
+Recap on P2P overlays.
+
+One of the topic of research is how to map the logical overlay to the underlying physical one wrt P2P overlays.
+
+P2P overlays exploit the services provided by the TCP/IP stack
+
+- **Unstructured overlays**: the topology doesn't follow any specific rule
+- **Structured overlays** such as distributed hash tables (these follow a set of rules)
+- **Hybrid overlays**: Super peers
+
+#### Unstructured overlays
+
+To find information inside an unstructured overlay, you need to use a look-up algorithm. These are easy protocols, highly resilient to churn, but the lookup cost is high (linear in the number of nodes in the network) and the scalability is low.
+
+Let's give a look to Gnutella, an example of unstructured overlay:
+
+- there's no index information
+- connections between peers are defined at random
+
+The main problems lie with bootstrapping the network and finding content without a central index.
+
+The bootstrap problem is common in all P2P systems. Usually there's a sort of repository of peer descriptors, such as Gnutella's WebCache, which stores the IP addresses of a list of "stable" peers. The cache is dynamically and automatically updated. The joining peer has an internal cache storing the IP addresses of peers contacted in current and previous sessions, that is updated regularly as well.
+
+Gnutella uses the Ping Pong Protocol to discover the network, and employs a TTL to limit flooding.
+
+Searching the Gnutella network works via a message flooding known as "gossiping". The query is sent to neighbours, they forward them to their neighbours and so on until the TTL zeroes. Cycles are detected by pairing a unique identifier with each message. When content is found, the reply to the lookup gets routed backwards to the peer who issued the query, then the actual file is transferred by means of a standard HTTP connection.
+
+Sometimes, in these kind of networks, it is possibile to have false negatives: a content is present in the network but because of TTL you may not find it
+
+Which are the main methods to search content in an unstructured overlay?
+
+- Breadth first (such as the one used with flooding)
+- Expanding ring/Iterative deepening: a sequence of flooding with increasing TTL
+- Random walk (drunkard's walk): it is described by a markov chain, the system has no memory of previous states. each neighbor could be chosen on different criteria and there are many variants of this.
+
+**K-Random walk**: the querying node sends out k query messages to an equal number of randomly chosen neighbours, then each step follows each own path by choosing one neighbor to forward it. TTL is used to stop the search. Each path is a walker. K-Random walk is a popular substitute for flooding, it reduces the number of messages but search latency increases. Another possible stopping mechanism is to check back with the issuing node if the information has been found.
+
+Self organized systems such as the unstructured overlays are well known for their distribution of control, local interactions, information and decisions, emergence of global structures, and failure resilience. 
+
+For instance, looking at the Gnutella backbone, a network of server-like nodes emerges from the interactions in the Gnutalla system.
+
+#### Structured overlays
+
+The choice of neighbors is defined according to some given criteria, and the resulting overlay network is structured. The goal is to guarantee scalability with key-based look ups, and guaranteeing that the look up of an information always has a given complexity (for instance $O(log(N))$)
+
+#### Hierarchical overlays
+
+There are both peers and super-peers. Peers connect to Super-Peers, which know the Peers' resourced and index them.
+
+The flooding mechanismis restricted to Super-Peers and resources are then directly exchanged between the peers.
+
+The main pro is the lower lookup cost and the improved scalability, but this kind of network is clearly less resistant to churn.
+
+Super-Peers are chosen autonomously by the system, based on their capacities and availability. They periodically exchange information on peers' resources.
+
+Peers upload their resource description to a Super-Peer, query them for information, and are involved in resource transfer.
+
+#### Content distribution networks (CDN)
+
+Let's suppose a server publishes new content, such as a new videogame, operating system, or song: since a single centralized server is a bottleneck when serving content, especially for video/audio streaming applications, a P2P content distribution is adopted. The initial file request are served by a centralized server, while further requests are served by peers which have already received and replicated the files.
+
+**Bittorrent is basically a CDN**
+
+Retrieving content in a pure P2P syste can be made by either:
+
+- Searching, on the value of a set of attributes of the content, "Google style", such as gnutella does, but this has poor scalability and overhead due to comparing whole objects.
+- Addressing: associating a unique identifier to the content and exploiting it to search for the content itself. The main advantage is efficient object detection, while disadvantages are ID computation by hashing and maintaining the addressing structure.
+
+#### Distributed hash tables
+
+They've been devised as a way to compromise between centralized server and flooding approaches. The idea is simply to split hash tables into several parts and distribute them to several servers. Initially this strategy was employed for web caching, the technique was later extended to DHT in P2P systems.
+
+**Rehashing problem**: if a server crashes you have to rehash all the keys, this is clearly impossible for P2P applications, so the classical hash function doesn't work. The solution is **consistent hashing**: an hashing scheme that doesn't depend directly on the number of servers. It guarantees that adding more nodes/removing nodes implies moving only a minority of data items.
+
+By using consistent hashing functions, keys are distributed quite evenly on the ring, but nodes may be different, some may be more or less powerful, so the idea is to assign more positions to the more powerful servers (load balacing wrt DHT).
+
+Content addressing vs. Location addressing
+
+The main idea with location addressing is to fingerprint the content (for example using an hash function) in order to recognize it. IPFS uses location addressing.
 
