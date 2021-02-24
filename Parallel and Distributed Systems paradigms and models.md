@@ -233,3 +233,36 @@ $\epsilon(1) = \frac{T_{seq/1}}{T_{par}(1)} = \frac{T_{seq}}{T_{seq}} = 1$
 
 Of course, $T_{par}(1)$ is not really equal to $T_{seq}$ (it features some overhead introduced by the parallel computation), but we can simplify it considering the time for $T_{seq}$ in cases such as the previous equation.
 
+---
+
+### Lecture 5
+
+**Completion time**: time from the beginning of the first input to the end of the last output
+
+- $T_C = \sum{L_i} + (m-1)max(L_i)$
+
+- $T_S = max(T_{S_i})$
+
+- $T_C$ can be rewritten as $T_C = \sum{L_i} + (m-1)T_S$, and can be approximated to $T_C \simeq mT_S$
+
+Three forms of farm.
+
+**Amdahl law**: a tentative to compute an upper bound for the speedup that can be achieved via parallel computation.
+
+Divide the computation in a serial fraction (that cannot be parallelized) and a non-serial fraction (which can be made parallel)
+
+$\lim_{n \to \infty}T_C = serial\ fraction$
+
+$speedup(n) = \frac{T_{seq}}{T_{par}} = \frac{T_{seq}}{(fT_{sec)} + (1-f)T_{seq}/n}$
+
+so, $\lim_{n\to \infty}speedup(n) = \frac{T_{seq}}{fT_{seq}} = \frac1f$
+
+let's try with an example:
+
+10% of the code is sequential $\implies f = \frac{1}{10} \implies max\ speedup = 10$ 
+
+$1h = 60m, 10h = 600m, 1m\ sequential, \frac{1}{600} \implies max\ speedup = 600$
+
+This means I will not be able to achieve a speedup greater that 600, so I would not benefit from the supercomputers in the TOP500, for example.
+
+So Amdahl's law is pretty harsh, but there are some ways to surpass Amdahl's law, notably Gustafson's Law. Basically it is about the fact that the data which can be parallelized continues to grow and can be addressed with a greater amount of resources and greater parallelism, while the serial part of the program is more or less stable over time for the same kind of problem. 
