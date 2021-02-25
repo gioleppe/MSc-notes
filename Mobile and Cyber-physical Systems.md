@@ -274,3 +274,169 @@ The following are the best practices regarding QoS:
   - there's no need of a queue for offline receivers
 - use QoS level 1 when you need all messages and subscribers can handle duplicates
 - use QoS level 2 when you need all emssages and subscribers cannot handle duplicates. Level 2 has twice the overhead wrt level 1 (which has twice the overhead wrt level 0)
+
+---
+
+### Lecture 5
+
+#### MQTT Persistent sessions
+
+Persistent sessions keep the state between a client and the broker. If a subscriber disconnects, when it connects again doesn't need to subsribe again to the topics. The session is associated to the clientId defined with the CONNECT.
+
+What is stored?
+
+- all subscriptions
+- all QoS 1 & 2 messages that are not confirmed yet
+- all QoS 1 & 2 messages that arrived when the client was offline
+
+A persistent session must be requested at CONNECT time. The cleanSession flag is involved, and the CONNACK message confirms wheter the session is persistent.
+
+Also clients have to store state in a persistent session:
+
+- all messages in a QoS 1 & 2 flow, not acked by the broker
+- all received QoS 2 messages not confirmed by the broker
+
+Messages of persistent sessions will be stored as long as the system allows it.
+
+Persistent sessions should be avoided:
+
+- for publishing-only clients that use only QoS 0, 
+- if old messages are not important
+- if you can afford to miss some data
+
+#### Retained messages
+
+A publisher has no guarantee that its messages are actually delivered to the subscribers, you can only guarantee the deliver to the broker, with QoS 1 or 2
+
+When a client connects to the broker and susbscribes a topic, it does not know when it will get any message, it depends on when the publisher will publish messages, it can take a lot of time as well!
+
+When a publisher sends a message with the retainFlag = True to the broker, the message is stored. If a new retained message of the same topic is published, the broker will keep the last one.
+
+When a client subscribes the topic of the retained message the broker immediately sends the retained message for that topic. 
+
+Retained messages are NOT persistent sessions, they are kept by the server even if they had already been delivered.
+
+To delete a retained message, is sufficient to publish a retained empty message of the same topic.
+
+Retained messages especially make sense for topics that get updated infrequently, for example devices which are either ON or OFF, this way all subscribers will easily know if the device is on, even if they connect at a later date.
+
+#### Last will & testament
+
+Last will & testament is used to notify other clients about the ungraceful disconnection of a client.
+
+At CONNECT time, a client can request the broker a specific behaviour about its lasti will. The last will is a normal message with topic, retained flag, QoS, and payload. 
+
+The last will is stored by the broker,and, when a client abruptly disconnects, it is sent to all subscribers of the topic specified in the last will message.
+
+If the client instead sends a DISCONNECT packet, the stored last will is discarded.
+
+The last will is sent if:
+
+- There's an I/O network error
+- The client doesn't send the KeepAlive message in time
+- The client closes the connection without a DISCONNECT
+- The broker coleses the connection with the client because of a protocol error
+
+The last will is specified in the Connect message, in the following fields:
+
+- lastWillTopic 
+- lastWillQoS
+- lastWillMessage
+- lastWillRetain
+
+The last will is often used along with retained messages: for example a crashing device with ON/OFF behavior, could send a last will with an OFF payload to all its subscribers.
+
+#### Keep Alive (heartbeat)
+
+It is a simple mechanism to assure that a client is still active.
+
+The client sends periodic "I'm alive" messages to the broker, the frequency of these messages is declared in the CONNECT message. The keep alive message must be sent by the client before the expiration of the interval set with the CONNECT, otherwise the broker treats the client as if it abruptly disconnected (possibly sending out its last will).
+
+The client sends PINGREQ messages, while the broker answers with PINGRESP.
+
+#### MQTT Packet format
+
+- Fixed header
+- Variable header (packet identifier, present in all packets except CONNECT and CONNACK, and PUBLISH if $QoS = 0$. It contains other infrmation depending on the packet type as well, such as protocol name and version, plus a number of flags in the case of a CONNECT packet)
+- Payload (contains additional information)
+
+#### MQTT Competitors
+
+The main issue with MQTT is that it relies on TCP, which is not particularly simple and lightweight, especially for low powered devices. Also, the broker is a single point of failure. 
+
+An alternative to MQTT is using HTTP, but it has more problems than advantages, so overall it is not a great competitor.
+
+Another option is to use Constrained Application Protocol (CoAP), which is designed for M2M (machine to machine) applications with constrained nodes and networks. CoAP is rapidly growing, and uses UDP underneath. CoAP does not need a bridge such as the broker in MQTT: nodes can communicate with each other (or with the cloud) directly (still, a bridge is somewhat supported if you want to).
+
+- CoAP is based on a client/server paradigm, where sensors/actuators are servers and applications are clients.
+- It uses a REST model: clients access resources by means of GET, POST, PUT, DELETE.
+- It works similar to HTTP but builds on top of UDP/IP instead
+- It embeds strong security mechanisms
+- It uses URIs to describe network nodes
+
+CoAP works with 8-bit controllers with small amount of ROM and RAM, and with contrained networks such as 6LoWPANs (with a typical throughput of 10(s)kbit/s)
+
+CoAP's main strengths are:
+
+- Native UDP
+- Multicast support
+- Security
+- Async communications supported as well (as in MQTT)
+
+Its main weaknesses are:
+
+- The standard's maturity
+- A not-so-sophisticated message reliability mechanism, somewhat similar to MQTT's QoS.
+
+#### MQTT vs CoAP
+
+- Both suitable for IoT applications
+- MQTT particularly suitable for very low power devices
+- pub/sub model of MQTT allows a full decoupling of producers and consumers.
+- Security in CoAP has no match in MQTT.
+
+#### The ZigBee standard
+
+It is a standard for wireless sensor networks.
+
+The main requirements are:
+
+- The network needs to be completely autonomous, no human interventions.
+- Very long battery life
+- Low data rate
+- Interoperability of ZigBee devices from different vendors
+
+the main features are:
+
+- Standard-based
+- Low cost
+- Devices can be used globally (worldwide)
+- Reliable and self healing
+- Supports large number of nodes
+- Easy to deploy
+- Very long battery life
+- Secure
+
+ZigBee is closely related to IEEE 802.15.4 Standard, it works on top of it at application layer and network layer, while  IEEE 802.15.4 works at MAC layer and Physical layer.
+
+IEEE 802.15.4 is a specification of the physical and MAC layers for low-rate Wireless Personal Area Networks (PAN). It is infrastructure-less, supports short range, supports star and P2P technologies. It can coexist with Bluetooth.
+
+ZigBee is built on top of IEEE 802.15.4, it specifices network and application layers.
+
+The application layer comprises:
+
+- The Application Framework (with a maximum of 240 APOs, Application Objects. Each APO is an user defined ZigBee application)
+- The ZigBee device Object (ZDO), which provides services to let the APOs organize into a distributed application
+- The Application Support sublayer (APS), which provides data and management services to the APOs and ZDO.
+
+Layers in the ZigBee stack communicate by mean of primitives. The standard workflow is $request \to indication \to response \to confirm$
+
+#### ZigBee network layer
+
+There are three types of device:
+
+- The network coordinator
+- Routers
+- End-devices
+
+With ZigBee you can configure Star, Tree, or Mesh networks.
