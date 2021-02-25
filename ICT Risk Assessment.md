@@ -173,3 +173,107 @@ Any system component can be affected by a vulnerability, a security expert:
 - Proactive approach vs penetrate and patch
 
 We should be able to assess the risk of each vulnerability in each system
+
+---
+
+### Lecture 4
+
+Rather than collecting data about the previous attacks on a system, let's attack it ourselves. This is the so called **adversary emulation**: it is an approach meant to mimic in an automated way the action of an attacker against the system. The ability to easily repeat the attack a large number of times can support a detailed evaluation of the system robustness and resilience.
+
+Sometimes both the success probability and the impact are approximated with ranges such as {low, medium, high}.
+
+We also need a **Risk-matrix** to compute the risk.
+
+There are some problems related to Risk Matrixes though. They should satisfy these lemmas, in order to satisfy weak consistency:
+
+- **Cox's First Lemma**: a red and a green cell cannot share an edge
+- **Cox's Second Lemma**: no red cell can occurr in the bottom row or left column of the matrix
+
+3X3 and 4X4 matrixes are always equally colored when applying Cox's lemmas, so they are not really useful.
+
+Another critical problem is that changes and breakthroughs in technologies can invalidate an change the vulnerabilities.
+
+#### Return on investment (ROI)
+
+It's not meaningful to spend a huge amount of money to prevent an attack which has a very low impact (or very low success probability). The countermeasures should focus on attacks with large success probabilities and/or large impact. Even then, there are **Black swans**, attacks with a very big impact but a somewhat low probability (it's possible that we do not know how to efficiently measure a probability for these), that can really disrupt a system.
+
+ROI is the difference between the overall risk before the countermeasures and the overall risk after the adoption of countermeasures. The difference arises because of a lower success probability and/or a lower impact of an attack.
+
+The case where a vulnerability is removed or patched is a particular one.
+
+There are two ways to evaluate the ROI: The simplest one is that the difference between before and after is positive (larger than zero), another approach is to use ratios (in which case the ratio must be >1 after the countermeasures).
+
+#### Risk Based Approach recap
+
+1. Asset Analysis
+2. Vulnerability Analysis
+3. Attack Analysis
+4. Threat Analysis
+5. Impact Analysis
+6. Risk Evalutation
+7. Risk Management (which countermeasures are to be adopted)
+
+7 can be present or not (we might be interested in not adopting any countermeasures for low impact/success rate attacks)
+
+The Risk Based Approach is the most modern one for ICT security.
+
+#### Asset Analysis
+
+We need to discover the assets that result in an impact if successfully attacked. This implies to discover which ICT resources an organization needs to work in an efficient way.
+
+ The main steps are the following:
+
+1. Discover the fundamental business process
+2. Find out the critical ICT resources for these processes
+3. Assess the impact for the organization if
+   - A business process is stopped (availability)
+   - The resource has to be rebuilt ex-novo (integrity)
+   - The attacker discovers the information in the resource (confidentiality)
+
+It's also important to estimate the actual value of a resource, which is usually not trivial. A possible approach is to consider the cost of rebuilding the resource if it disappears.
+
+The first thing to do with asset analysis is to build an inventory of all the resources in the system to be protected (companies, even bigger ones, do not know what they need to protect). 
+
+Other aspects to evaluate are:
+
+- Externalities
+- Free riding
+
+#### Security Policy
+
+It is a set of rules that an organization adopts both to minimize cyber risk and to define the goals of security.
+
+- Defines the goal of security
+- Defines the correct behavior of all the users
+- Forbids dangerous behaviors and components
+
+The security policy cannot violate the legislation that concerns ICT systems.
+
+Security policies make use of the **Subject/Object abstraction**.
+
+A subject entitled to invoke an operation of an object owns a **right** on this object. Rights may be directly or indirectly deduced from the security policy.
+
+**Default allow**: defines forbidden behaviors and allows anything that it does not define (enumerating badness)
+
+**Default deny**: defines legal behaviors and forbids anything it does not define (anything else)
+
+**Default allow is very dangerous**, it should be avoided.
+
+Mark Ranum - The Six Dumbest Ideas in Computer Security
+
+1. Default permit
+2. Enumerating badness
+3. Penetrate & Patch
+4. Hacking is cool
+5. Educating Users
+6. Action is better than inaction
+
+#### Access Control Policies
+
+- Discretionary access control
+  - There's an owner for each object
+  - The owner defines the policy (wrt subjects that can operate on the object and the rights for each subject)
+- Mandatory access control
+  - There is an owner but there are some system wide rules it has to satisfy (that cannot be violated)
+  - It is implemented partitioning objects and subjects into classes. All the classes are partially ordered, and an owner can only grant permission to a subject only if that subject's class and the object's class satisfy a predefined condition
+
