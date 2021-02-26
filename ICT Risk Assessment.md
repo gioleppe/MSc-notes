@@ -381,3 +381,57 @@ Security is not a boolean world, you could always have some false positives (typ
 
 In some cases, the number of false positives and false negatives is so large that no meaningful information can actually be found.
 
+---
+
+### Lecture 6
+
+How to find vulnerabilities in non standard components? 
+
+If we don't have any source code available, we must use some sort of black box.
+
+A **Web scanner** is a tool used to search for vulnerabilitiesin web application (it focuses on well known vulnerabilities). It works by first crawling web pages, then it considers all the pages in isolation and emulates the way an attacker might act on that specific page (for example injecting some code into forms, or queries to check for SQL injection attacks).
+
+**Tainting analysis**: it is a preliminary static analysis of the source code, useful to discover which instructions receive an input. It is a worst case approach: it always returns a larger set than the actual one, since it is impossible to check at static time if an input will taint a given instruction.
+
+#### Fuzzing and fuzzer
+
+Fuzzing is a search technique that can be applied even if the source code of a module is not available. According to Google and Microsoft, it can discover more than 80% of vulnerabilities.
+
+The basic idea is to send malformed input to the module, if the module crashes, then the input is not controlled and a vulnerabilityis possible. 
+
+The fuzzer automates this strategy by testing a huge amount of inputs in parallel.
+
+**Mutation based fuzzing**: you take a good input and add anomalies to it. This requires little or no set up time. Anomalies may be generated at random or by following some kind of euristhic.
+
+**Generation based fuzzing**: test cases are generated from some description of the format. Anomalies are added to each possible spot in the inputs. Can take a while to set up but usually provides better results than random fuzzing.
+
+White box fuzzing is clearly more effective than black box fuzzing, since you can see and verify the code paths traversed by every malformed input. White box fuzzing allows to use a technique called **drilling**, which involves an optimized search of malformed inputs.
+
+**Evolutionary fuzzing**: you try to generate inputs based on the program's response. You can generate test cases based on code coverage metrics, this technique is still in alpha stage though.
+
+The main things about fuzzing are:
+
+- Protocol knowledge is helpful
+- Generational fuzzers are better than random fuzzers
+- Using more fuzzers is better
+- The longer you run a fuzzer, the more bugs you will find
+- You guide the process, fix it when it breaks or fails to reach where you need it to go
+- Code coverage can serve as a useful guide
+
+Fuzzing can also be applied to IoT devices, in order to evaluate their reliability and vulnerability.
+
+**Robustness of a module**: is the ability to prevent damage to the overall system even if its specifications are violated.
+
+Violation of specifications is a generalization of fuzzing. 
+
+The concept of robustness comes from biology. 
+
+Robustness is a system property and it can be increased only by decreasing performance, efficient, ease of use, or some other system property. Robustness doesn't come for free.
+
+A robustness measure is a continuous value in the range [0, 1), 1 is an asymptotic value. Total robustness is not reachable. Robustness depends upon the number of checks implemented in the program. The more checks, the more robustness tends to 1.
+
+A compromise with the number of checks is required, since they reduce overall performance, since they're implemented through instructions such as any other instruction.
+
+It's been experimentally confirmed that even trivial checks can improve the component robustness. Complex checks should only be adopted after the trivial ones. The most efficient checks are the ones related to data types.
+
+We can be robust wrt intelligent attacks and/or random failures. We're interested to robustness wrt intelligent attacks.
