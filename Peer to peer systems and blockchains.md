@@ -141,3 +141,62 @@ Content addressing vs. Location addressing
 
 The main idea with location addressing is to fingerprint the content (for example using an hash function) in order to recognize it. IPFS uses location addressing.
 
+---
+
+### Lecture 4
+
+#### Content Addressing (continued)
+
+How to actually implement content addressing? The hash function is not enough. A routing algorithm is required.
+
+We want a maximum of $O(log(n))$ steps to reach the content, the routing should be efficient.
+
+We also want to implement policies to support a voluntary node leave and a node failure. Of course a voluntary leave is not as catastrophic as a node failure, since the leaving node could redistribute its address space to the neighbor nodes, while in case of node failure, we need to introduce some redundancy in order to be able to sustain such an event.
+
+Different DHT proposals have different network topologies.
+
+#### DHT API
+
+It is very simple, usually has just:
+
+- PUT(key value) for content insertion
+- GET(key) for content search
+
+The DHT approach doesn't support complex queries, which are instead supported by a centralized approach or a pure P2P flooding.
+
+Some real applications using DHT approaches are:
+
+- IPFS
+- Bittorrent
+- Ethereum
+
+#### The Chord DHT
+
+The main idea is to base the system on a few, very powerful concepts:
+
+- Applying consistent hashing concepts
+- Routing is logarithmic with very high probability, and the routing table has a logarithmic size with very high probability.
+- The network is self organising and self adapting, in case of a node's leave.
+
+Chord applies the Consistent Hashing concept.
+
+How does look up work? A node implements a minimal Routing Table, each node remembers only te next node on the ring, and this is the only knowledge of a node about other nodes of the ring. Queries are forwarded to each node's successor in the ring. 
+
+The main disadvantage is that the routing is linear and is subject to single node failure.
+
+We want to reduce the number of steps: the way to do so is to let a node store links for z neighbors, we want to find a logarithmic mesh of the nodes of the ring (more links towards close neighbors, less links towards far neighbors)
+
+Each node maintains some data structures to support routing:
+
+1. The finger table
+2. a link to its successor and to its predecessor
+3. a set of pair (key, value)
+
+So, how is the routing algorithm made in Chord?
+
+- Each node propagates a query with key k to the farthes finger preceding k.
+- The propagation of the key goes on untile the node n such that $((n < k) \and successor(n) \geq k)$ in $mod(2^n)$ arithmetic. In this case successor(n) owns the key.
+
+#### Handling Churn in Chord
+
+The main reason why Chord has never been used in real applications is because of its strict topology rules, that make it hard to maintain the network.
