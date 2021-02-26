@@ -277,3 +277,107 @@ Mark Ranum - The Six Dumbest Ideas in Computer Security
   - There is an owner but there are some system wide rules it has to satisfy (that cannot be violated)
   - It is implemented partitioning objects and subjects into classes. All the classes are partially ordered, and an owner can only grant permission to a subject only if that subject's class and the object's class satisfy a predefined condition
 
+---
+
+### Lecture 5 
+
+#### Mandatory Access Control (cont'd)
+
+- A subject in a class C may be enabled to
+  - Read any file with a class lower than or equal to C
+  - Write any file with a class equal to C
+  - Append a record to a file with a class larger than C
+  - The owner of the file can grant the rights provided that the three previous rules are satisfied
+
+Mandatory access control is useful to prevent information leakage. Partial order comes from the military world.
+
+#### Security policies
+
+The **no write down** policy is used in order to avoid information leaking issues. Its main problem is that information may flow only at an higher level. To address this problem, a further operation is introduced to periodically desecretate information to the lower levels, but this operation is the ideal target for an attacker.
+
+**Bell-LaPadula Policy**: "no read up, no write down"
+
+When you're interested into integrity instead of confidentiality, the security policy should adopt a **no write up** approach. In this case a subject in a class C may be enabled to write any file with a class lower than or equal to C, and read any file with a class larger than or equal to C. This policy is called **Bida Integrity Policy**.
+
+In some cases integrity is much more important than confidentiality.
+
+**Watermark policy**: every subject has a maximum level, but is not fixed, it is the highest one of the objects it has worked on. The level increases as the subject reads critial information. The increase is monotonical, no decrease is possible. The policy is time dependent, and was introduced to minimize the flowing of information at higher levels.
+
+**No interference property**: a system satisfies the property if the labels associated with each object do not change after the removal of a subject with different (higher or lower) level that accessed those resources.
+
+**Clark-Wilson policy**
+
+**Chinese Wall policy**: objects are partitioned into classes, as soon as a subject invokes an operation on an object 
+
+- It cannot invoke operations on objects in distinct classes
+- it can invoke operations on objects in the class
+
+This is made to avoid conflict of interest. The policy is time dependent and can be integrated with both DAC and a MAC.
+
+Real policies could be made up of various multiple ones, and there could be two levels for subjects as well: one for integrity and one for confidentiality.
+
+#### Trusted Computing Base
+
+includes any component that is involved in the implementation of the security policy. These components are highly critical since if there's a defect in the TCP, that defect/bug is a vulnerability.
+
+Any system needs to trust all the TCB components. Assurance of these components is very important.
+
+The smaller the TCB, the better for a series of reasons:
+
+- less code means less bugs (statistically)
+- less code means that correctness can be proven by applying formal methods in a much simpler way.
+
+#### Vulnerability Analysis
+
+What is a **vulnerability**? (recap)
+
+A defect in one system component or in the way the component is used.
+
+By exploiting the bug, a threat agent can fire an unexpected behavior of the component.
+
+Several taxonomies have been proposed for vulnerabilities.
+
+A Vulnerability could be located in various places, such as:
+
+- Actions that are executed (procedural)
+- People executing the action (organization)
+- Hardware or software tools (ICT tools that are used)
+
+About vulnerability in tools, there's a further taxonomy classification:
+
+- Specification
+  - You may use a library with more functions than the required ones. If someone succeeds in invoking some of the "useless" functions, anomalous behaviors may arise. This kind of vulnerability could be introduced with code reuse, since there could be some vulnerabilities in the code that is reused.
+- Implementation 
+  - There could be missing control on the user input, the root cause is the user's ability to provide malformed input to the code. These vulnerabilities are strongly dependant upon the native control in the language type system and in the run time support.
+- Strutural
+  - These vulnerabilities arise when a component works in isolation, but doesn't work correctly when composed in a system. This way trust may be violated, since some components may delegate security checks to other ones.
+
+There's also another type of classification based on the attacker's point of view, either who can implement the attack:
+
+- Those who own a local account $\implies$ Local vulnerability
+- Those who can interact with the machine $\implies$ Remote vulnerability 
+
+Or what can be achieved by the attack.
+
+#### Searching for vulnerabilities
+
+Since most vulnerabilities and exploits for standard components are well known, the search should focus on not standard components, structural vulnerabilities due to the composition of standard components with non standard ones.
+
+Vulnerabilities in standard components should be the last ones to search for.
+
+In order to search for vulnerabilities, a vulnerability scanner is usually employed. The vulnerability scanner is a tool that returns a set of vulnerabilities for each computer node in a network. It fingerprints the scanned system, then it accesses a database that maps each OS and application into a set of public vulnerabilities.
+
+Vulnerablity scanning is the easiest implementation of a vulnerability analysis.
+
+**Fingerprinting** is the main mechanism to identify the OS and it is implemented by sending malformed IP packets and see the reply. Each OS and application has its own reaction and response to a wrong packet that violates TCP/IP specifications. Several packets may be required to solve any ambiguity among distinct OSes/components.
+
+This technique is called **active** fingerprinting, one coul also use **passive** fingerprinting, capturing packets flowing in the networks. Passive fingerprinting is much slower but doesn't produce any noise.
+
+Applications are actively fingerprinted by analyzing open ports on the node. This kind of active fingerprinting can be confused by using a non-standard port to run an application.
+
+A big problem with vulnerability scanners is that it could produce both false positives: a vulnerability could have been patched, the vulnerability could not be present anymore. The only way to distinguish false and true positives is to actually implement an attack that exploits the vulnerability (breach and simulation tools are used in order to do this), but this is not always possible on production systems.
+
+Security is not a boolean world, you could always have some false positives (type I errors) and false negatives (type II errors) the accuracy is given by: $accuracy = \frac{number\ of\ true\ positives + number\ of\ true\ negatives}{number\ of\ true\ positives + false\ positives + false\ negatives + true\ negatives}$
+
+In some cases, the number of false positives and false negatives is so large that no meaningful information can actually be found.
+
