@@ -440,3 +440,48 @@ There are three types of device:
 - End-devices
 
 With ZigBee you can configure Star, Tree, or Mesh networks.
+
+---
+
+### Lecture 6
+
+#### Network layer cont'd
+
+The network layer works with a series of primitives, used to offer services to the application layer.
+
+Before doing anything a device must be part of the network. It has two ways to do so: creating a new network (in this case the device becomes a ZigBee coordinator) or join an existing one (becoming a router or end-device). The role of the device is chosen at compile-time.
+
+**NETWORK-FORMATION** is the primitive that a device acting as coordinator can invoke in order to create a new network. The network layer calls the underlying MAC layer, in order to look for the best available channel (the least noisy). After this, another call is carried out to the MAC layer, in order to check for other networks in the neighbourhood.
+
+The MAC address of each device doesn't appear in the headers of ZigBee packets, this is made in order to save up space, because the devices are very low powered and the network has low throughput.
+
+How to join a ZigBee network? There are two ways to do so:
+
+- **Join through association**: initiated by a device wishing to join an existing network
+- **Direct join**: requested by a router or by the coordinator to request a device to join its PAN
+
+#### ZigBee application layer
+
+It is comprised by:
+
+- The Application Framework
+- The ZigBee Device Object (ZDO)
+- Application Support Sublayer (APS)
+
+The Application Framework permits up to 240 APOs (Application Objects). Each APO can be used to get or set parameters: it acts as an endpoint.
+
+The Application Support Sublayer is a sort of transport layer. It provides:
+
+- Data service 
+- Management
+
+A ZigBee device can run multiple applications.
+
+APS is divided into clusters identifying various aspects of each device. Cluster identifiers are used to tell which operations are available.
+
+Application Profiles (and Profile IDs) are used for identifying applications
+
+Device IDs: their main purpose is to make ZigBee more human-friendly.
+
+**[skipped some stuff, check again later]**
+
